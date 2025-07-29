@@ -29,6 +29,15 @@ class User extends Authenticatable
         'membership_upgraded_at',
     ];
 
+
+    // FOR POSTMAN TESTING
+    protected $except = [
+    '/register',
+    '/login',
+];
+
+
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -49,7 +58,7 @@ class User extends Authenticatable
         'membership_upgraded_at' => 'datetime',
         'commission_rate' => 'decimal:2',
         'password' => 'hashed',
-    ];
+    ];  
 
     /**
      * Boot the model.

@@ -38,11 +38,13 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 // Protected Routes
 Route::middleware('auth')->group(function () {
     
+
     // Dashboard Routes
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/free', [DashboardController::class, 'freeDashboard'])->name('dashboard.free');
     Route::get('/dashboard/vip', [DashboardController::class, 'vipDashboard'])->name('dashboard.vip');
     
+
     // Profile Routes
     Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
     Route::put('/profile', [DashboardController::class, 'updateProfile'])->name('profile.update');

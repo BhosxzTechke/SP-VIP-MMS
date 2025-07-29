@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Log;
+
+
 
 class AuthController extends Controller
 {
@@ -19,6 +22,11 @@ class AuthController extends Controller
     {
         return view('auth.login');
     }
+
+
+
+
+    
 
     /**
      * Handle login request.
@@ -122,15 +130,20 @@ class AuthController extends Controller
                 }
             }
 
+
             // Log the user in
             Auth::login($user);
 
             return redirect()->route('dashboard')->with('success', 'Registration successful! Welcome to ShoPilipinas VIP Portal.');
 
-        } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Registration failed. Please try again.'])->withInput();
-        }
+            } catch (\Exception $e) {
+                Log::error('Registration error: ' . $e->getMessage());
+                return response()->json(['error' => 'Registration failed', 'message' => $e->getMessage()], 500);
+            }
     }
+
+
+
 
     /**
      * Handle logout request.
