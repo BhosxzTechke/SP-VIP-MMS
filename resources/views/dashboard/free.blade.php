@@ -24,6 +24,8 @@
             </div>
         </div>
 
+
+        
         <!-- Stats -->
         <div class="mt-8">
             <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -229,7 +231,7 @@
                             <div class="bg-white bg-opacity-10 rounded-lg p-4 text-white">
                                 <h3 class="font-bold text-lg capitalize">{{ $tier }} VIP</h3>
                                 <p class="text-2xl font-bold">{{ $pricing['formatted_price'] }}</p>
-                                <p class="text-sm opacity-90">Up to {{ max($pricing['commission_rates']) }}% commission</p>
+                            <p class="text-sm opacity-90">{{ $pricing['commission_rates'][0] ?? 'N/A' }}% commission</p>
                             </div>
                             @endforeach
                         </div>

@@ -50,13 +50,21 @@ class AuthController extends Controller
             
             $user = Auth::user();
             
-            // Redirect based on user type
+             // Redirect based on user type
             if ($user->isAdmin()) {
                 return redirect()->intended(route('admin.dashboard'));
-            } elseif ($user->role === 'free') {
-            return redirect()->route('dashboard.free');
-        }
-            
+
+            } elseif ($user->membership_type === 'free') {
+                return redirect()->route('dashboard.free');
+
+
+            } elseif ($user->membership_type === 'vip') {
+                return redirect()->route('dashboard.vip');
+
+         }
+
+
+        
             return redirect()->intended(route('dashboard'));
         }
 
