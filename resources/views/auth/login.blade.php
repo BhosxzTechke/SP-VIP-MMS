@@ -3,20 +3,24 @@
 @section('content')
 <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8">
+
         <div>
-            <div class="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-primary-100">
-                <div class="text-primary-600 font-bold text-xl">S</div>
-            </div>
+
+        <div class="mx-auto h-20 w-14 flex items-center justify-center">
+            <a href="{{ route('landing') }}"><img src="icon/shopilipinas-logo.png" class="w-19 h-19 py-3" alt="Shopilipinas Icon"/></a>
+        </div>
+
             <h2 class="mt-6 text-center text-3xl font-bold text-gray-900">
                 Sign in to your account
             </h2>
             <p class="mt-2 text-center text-sm text-gray-600">
                 Or
-                <a href="{{ route('register') }}" class="font-medium text-primary-600 hover:text-primary-500">
+                <a href="{{ route('register.free') }}" class="font-medium text-primary-600 hover:text-primary-500">
                     create a new account
                 </a>
             </p>
         </div>
+
 
         <form class="mt-8 space-y-6" method="POST" action="{{ route('login') }}">
             @csrf
