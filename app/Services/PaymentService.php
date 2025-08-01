@@ -40,6 +40,7 @@ class PaymentService
             // Create transaction record
             $transaction = Transaction::createMembershipUpgrade($user, $tier, $amount / 100);
 
+
             // Create membership record
             $membership = Membership::create([
                 'user_id' => $user->id,
@@ -57,15 +58,17 @@ class PaymentService
                             'currency' => 'PHP',
                             'description' => "ShoPilipinas {$tier} VIP Membership - {$user->name}",
                             'statement_descriptor' => 'ShoPilipinas VIP',
+                            'payment_method_allowed' => ['card', 'gcash', 'grab_pay', 'paymaya'],
                             'metadata' => [
-                                'user_id' => $user->id,
-                                'membership_tier' => $tier,
-                                'transaction_id' => $transaction->id,
-                                'membership_id' => $membership->id,
+                                'user_id' => (string) $user->id,
+                                'membership_tier' => (string) $tier,
+                                'transaction_id' => (string) $transaction->id,
+                                'membership_id' => (string) $membership->id,
                             ],
                         ],
                     ],
                 ]);
+
 
             if ($response->failed()) {
                 Log::error('PayMongo payment intent creation failed', [
@@ -112,91 +115,125 @@ class PaymentService
         }
     }
 
+
+
     /**
      * Create payment method for the payment intent.
      */
-    public function createPaymentMethod(string $type, array $details): array
-    {
-        try {
-            $response = Http::withBasicAuth($this->publicKey, '')
-                ->post("{$this->baseUrl}/payment_methods", [
-                    'data' => [
-                        'attributes' => [
-                            'type' => $type,
-                            'details' => $details,
-                        ],
+public function createPaymentMethod(string $type, User $user): array
+{
+    try {
+            if (in_array($type, ['gcash', 'grab_pay', 'paymaya'])) {
+                $details = [
+                    'return_url' => route('payment.success'),
+                ];
+            } elseif ($type === 'card') {
+                $details = [
+                    'card_number' => '4343434343434345', // Test card number
+                    'exp_month' => 12,
+                    'exp_year' => 2028,
+                    'cvc' => '123',
+                    'billing' => [
+                        'name' => $user->name,
+                        'email' => $user->email,
                     ],
-                ]);
-
-            if ($response->failed()) {
-                Log::error('PayMongo payment method creation failed', [
-                    'response' => $response->json(),
-                    'type' => $type,
-                ]);
-                throw new Exception('Failed to create payment method');
+                ];
+            } else {
+                throw new \Exception("Unsupported payment type: {$type}");
             }
+        // Create payment method via PayMongo API
 
-            return [
-                'success' => true,
-                'payment_method' => $response->json()['data'],
-            ];
-
-        } catch (Exception $e) {
-            Log::error('Payment method creation error', [
-                'error' => $e->getMessage(),
-                'type' => $type,
+        $response = Http::withBasicAuth($this->publicKey, '')
+            ->post("{$this->baseUrl}/payment_methods", [
+                'data' => [
+                    'attributes' => [
+                        'type' => $type,
+                        'details' => $details,
+                    ],
+                ],
             ]);
 
-            return [
-                'success' => false,
-                'error' => $e->getMessage(),
-            ];
+        if ($response->failed()) {
+            Log::error('PayMongo payment method creation failed', [
+                'response' => $response->json(),
+                'type' => $type,
+                'user_id' => $user->id,
+            ]);
+            throw new \Exception('Failed to create payment method');
         }
+
+        return [
+            'success' => true,
+            'payment_method' => $response->json()['data'],
+        ];
+
+    } catch (\Exception $e) {
+        Log::error('Payment method creation error', [
+            'error' => $e->getMessage(),
+            'type' => $type,
+            'user_id' => $user->id ?? null,
+        ]);
+
+        return [
+            'success' => false,
+            'error' => $e->getMessage(),
+        ];
     }
+}
+
+
+
 
     /**
      * Attach payment method to payment intent.
      */
-    public function attachPaymentMethod(string $paymentIntentId, string $paymentMethodId): array
-    {
-        try {
-            $response = Http::withBasicAuth($this->secretKey, '')
-                ->post("{$this->baseUrl}/payment_intents/{$paymentIntentId}/attach", [
-                    'data' => [
-                        'attributes' => [
-                            'payment_method' => $paymentMethodId,
-                            'client_key' => request('client_key'),
-                        ],
-                    ],
-                ]);
+public function attachPaymentMethod(string $paymentIntentId, string $paymentMethodId, string $type): array
+{
+    try {
+        $attributes = [
+            'payment_method' => $paymentMethodId,
+        ];
 
-            if ($response->failed()) {
-                Log::error('PayMongo payment method attachment failed', [
-                    'response' => $response->json(),
-                    'payment_intent_id' => $paymentIntentId,
-                    'payment_method_id' => $paymentMethodId,
-                ]);
-                throw new Exception('Failed to attach payment method');
-            }
+        // Required for e-wallets like GCash, GrabPay
+                if (in_array($type, ['gcash', 'grab_pay', 'paymaya'])) {
+                    $attributes['return_url'] = route('payment.success');
+                }
 
-            return [
-                'success' => true,
-                'payment_intent' => $response->json()['data'],
-            ];
+        $response = Http::withBasicAuth($this->secretKey, '')
+            ->post("{$this->baseUrl}/payment_intents/{$paymentIntentId}/attach", [
+                'data' => ['attributes' => $attributes],
+            ]);
 
-        } catch (Exception $e) {
-            Log::error('Payment method attachment error', [
-                'error' => $e->getMessage(),
+        if ($response->failed()) {
+            Log::error('PayMongo payment method attachment failed', [
+                'response' => $response->json(),
                 'payment_intent_id' => $paymentIntentId,
                 'payment_method_id' => $paymentMethodId,
             ]);
-
-            return [
-                'success' => false,
-                'error' => $e->getMessage(),
-            ];
+            throw new \Exception('Failed to attach payment method');
         }
+
+        return [
+            'success' => true,
+            'payment_intent' => $response->json()['data'],
+        ];
+
+    } catch (\Exception $e) {
+        Log::error('Payment method attachment error', [
+            'error' => $e->getMessage(),
+            'payment_intent_id' => $paymentIntentId,
+            'payment_method_id' => $paymentMethodId,
+        ]);
+
+        return [
+            'success' => false,
+            'error' => $e->getMessage(),
+        ];
     }
+}
+
+
+    
 
     /**
      * Process webhook from PayMongo.
