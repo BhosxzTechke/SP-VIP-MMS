@@ -19,52 +19,71 @@ use App\Http\Controllers\LandingController;
 */
 
 // Landing Page
+
+
 Route::get('/', [LandingController::class, 'index'])->name('landing');
+
+
 
 // Authentication Routes
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
+
+    
+    // Default Free User Registration
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
+
 });
-
-
 
 
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
+
+
+
+
+
 // Protected Routes
 Route::middleware('auth')->group(function () {
-    
 
+    
     // Dashboard Routes
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/free', [DashboardController::class, 'freeDashboard'])->name('dashboard.free');
     Route::get('/dashboard/vip', [DashboardController::class, 'vipDashboard'])->name('dashboard.vip');
     
 
+
     // Profile Routes
     Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
     Route::put('/profile', [DashboardController::class, 'updateProfile'])->name('profile.update');
-    
+
+
     // Referral Routes
     Route::get('/referrals', [DashboardController::class, 'referrals'])->name('referrals');
     Route::get('/referrals/history', [DashboardController::class, 'referralHistory'])->name('referrals.history');
     
+
+
+
     // Payment Routes
     Route::get('/upgrade', [PaymentController::class, 'showUpgrade'])->name('upgrade');
     Route::post('/upgrade/checkout', [PaymentController::class, 'checkout'])->name('upgrade.checkout');
     Route::get('/payment/success', [PaymentController::class, 'paymentSuccess'])->name('payment.success');
     Route::get('/payment/cancel', [PaymentController::class, 'paymentCancel'])->name('payment.cancel');
-    
+
+
     // Transaction History
     Route::get('/transactions', [DashboardController::class, 'transactions'])->name('transactions');
-});
+  });
 
-// Admin Routes
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+
+  
+    // Admin Routes
+    Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
     
     // User Management
@@ -73,9 +92,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('/users/{user}/membership', [AdminController::class, 'updateUserMembership'])->name('users.membership.update');
     Route::delete('/users/{user}', [AdminController::class, 'deleteUser'])->name('users.delete');
     
+
+    
     // Membership Management
     Route::get('/memberships', [AdminController::class, 'memberships'])->name('memberships');
     Route::put('/memberships/{membership}/status', [AdminController::class, 'updateMembershipStatus'])->name('memberships.status.update');
+    
+
     
     // Referral Management
     Route::get('/referrals', [AdminController::class, 'referrals'])->name('referrals');
@@ -84,7 +107,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     
     // Transaction Management
     Route::get('/transactions', [AdminController::class, 'transactions'])->name('transactions');
-    Route::get('/transactions/{transaction}', [AdminController::class, 'showTransaction'])->name('transactions.show');
+    Route::get('/transactions/{transaction}', [AdminController::class, 'showTransaction'])->name('tran  sactions.show');
     
     // Reports
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
@@ -95,5 +118,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('/settings', [AdminController::class, 'updateSettings'])->name('settings.update');
 });
 
-// Public referral link
-Route::get('/ref/{code}', [AuthController::class, 'referralLink'])->name('referral.link');
+
+
+
+
+
+

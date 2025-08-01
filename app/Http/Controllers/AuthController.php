@@ -38,6 +38,7 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
+
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
@@ -57,14 +58,12 @@ class AuthController extends Controller
             } elseif ($user->membership_type === 'free') {
                 return redirect()->route('dashboard.free');
 
-
+                
             } elseif ($user->membership_type === 'vip') {
                 return redirect()->route('dashboard.vip');
 
          }
 
-
-        
             return redirect()->intended(route('dashboard'));
         }
 
@@ -76,7 +75,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Show the registration form.
+     * Show the registration VIP form.
      */
     public function showRegister(Request $request)
     {
@@ -91,6 +90,7 @@ class AuthController extends Controller
         }
 
         return view('auth.register', compact('referralCode', 'referrer'));
+
     }
 
 
@@ -109,7 +109,9 @@ class AuthController extends Controller
             'password' => ['required', 'confirmed', Password::min(8)],
             'referral_code' => 'nullable|string|exists:users,referral_code',
             'terms' => 'required|accepted',
+
         ]);
+
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
@@ -136,7 +138,11 @@ class AuthController extends Controller
                         'status' => 'pending',
                     ]);
                 }
+
+
             }
+
+
 
 
             // Log the user in
