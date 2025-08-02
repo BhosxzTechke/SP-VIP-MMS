@@ -6,6 +6,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\MembershipController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -68,8 +70,15 @@ Route::middleware('auth')->group(function () {
     
 
 
+  // Membership Routes Payment
+    Route::get('/membership', [MembershipController::class, 'showForm'])->name('membership.form');
+    Route::post('/subscribe', [MembershipController::class, 'subscribe'])->name('membership.subscribe');
+    Route::get('/membership/success', [MembershipController::class, 'success'])->name('membership.success');
+    Route::get('/membership/failed', [MembershipController::class, 'failed'])->name('membership.failed');
 
-    // Payment Routes
+
+    
+    // Payment Routes not used
     Route::get('/upgrade', [PaymentController::class, 'showUpgrade'])->name('upgrade');
     Route::post('/upgrade/checkout', [PaymentController::class, 'checkout'])->name('upgrade.checkout');
     Route::get('/payment/success', [PaymentController::class, 'paymentSuccess'])->name('payment.success');
@@ -94,6 +103,7 @@ Route::middleware('auth')->group(function () {
     
 
     
+    
     // Membership Management
     Route::get('/memberships', [AdminController::class, 'memberships'])->name('memberships');
     Route::put('/memberships/{membership}/status', [AdminController::class, 'updateMembershipStatus'])->name('memberships.status.update');
@@ -117,8 +127,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
     Route::put('/settings', [AdminController::class, 'updateSettings'])->name('settings.update');
 });
-
-
 
 
 
