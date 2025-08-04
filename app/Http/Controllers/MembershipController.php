@@ -119,84 +119,10 @@ public function subscribe(Request $request)
 
 
 
-public function success(Request $request)
-{
-    $tier = $request->get('tier');
-
-    if (!$tier) {
-        return redirect()->route('membership.form')->with('error', 'No membership tier found.');
-    }
-
-    if (!Auth::check()) {
-        return redirect()->route('login')->with('error', 'Please log in to complete the membership.');
-    }
-
-    $user = Auth::user();
-
-    DB::beginTransaction();
-
-    try {
-        // Save the transaction first
-        $transaction = Transaction::create([
-            'user_id' => $user->id,
-            'type' => 'membership',
-            'amount' => config("paymongo.membership_prices.$tier"),
-            'currency' => 'PHP',
-            'payment_method' => 'manual',
-            'payment_metadata' => null,
-            'external_payment_id' => 'manual',
-            'status' => 'paid',
-            'created_at' => now(),
-        ]);
-
-        // Create the membership record
-        Membership::create([
-            'user_id' => $user->id,
-            'tier' => $tier,
-            'amount' => config("paymongo.membership_prices.$tier"),
-            'payment_status' => 'paid',
-            'transaction_id' => $transaction->id,
-            'paymongo_payment_id' => 'manual',
-            'payment_details' => null,
-            'activated_at' => now(),
-            'expires_at' => now()->addYear(),
-        ]);
-
-        
-        // Check if user was referred by someone
-        if ($user->referred_by) {
-            $referrer = \App\Models\User::find($user->referred_by);
-
-            // Set base commission rate (e.g., 3% if free, 5% if VIP)
-            $referrerRate = ($referrer->user_type === 'vip') ? 0.05 : 0.03;
-            $commission = config("paymongo.membership_prices.$tier") * $referrerRate;
-
-            // Save referral record
-            DB::table('referrals')->insert([
-                'referrer_id' => $referrer->id,
-                'referred_id' => $user->id,
-                'commission_rate' => $referrerRate * 100, // store as 3 or 5
-                'commission_amount' => $commission,
-                'status' => 'earned', // or 'pending'
-                'trigger_event' => 'membership_paid',
-                'approved_at' => now(),
-                'paid_at' => null,
-                'notes' => "Referral commission from {$user->name}'s $tier membership",
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+        public function success(Request $request)
+        {
+            return view('payment.successful')->with('message', 'We received your payment! If it doesn’t show right away, it will be confirmed shortly.');
         }
-
-
-        DB::commit();
-        return view('payment.successful');
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return redirect()->route('membership.form')->with('error', 'Payment failed: ' . $e->getMessage());
-    }
-
-}
 
     public function failed()
     {
