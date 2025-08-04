@@ -68,7 +68,7 @@ class AdminController extends Controller
         if ($request->filled('membership_type')) {
             $query->where('membership_type', $request->membership_type);
         }
-
+    
         // Search by name or email
         if ($request->filled('search')) {
             $search = $request->search;
@@ -77,6 +77,7 @@ class AdminController extends Controller
                   ->orWhere('email', 'like', "%{$search}%");
             });
         }
+
 
         // Sort
         $sortBy = $request->get('sort_by', 'created_at');
@@ -99,6 +100,8 @@ class AdminController extends Controller
     /**
      * Show specific user details.
      */
+
+
     public function showUser(User $user)
     {
         $user->load(['referralsSent', 'referralsReceived', 'memberships', 'transactions']);
@@ -114,6 +117,8 @@ class AdminController extends Controller
 
         return view('admin.users.show', compact('user', 'stats'));
     }
+
+
 
     /**
      * Update user membership.
@@ -159,6 +164,7 @@ class AdminController extends Controller
     /**
      * Display memberships management page.
      */
+
     public function memberships(Request $request)
     {
         $query = Membership::with('user');
@@ -181,10 +187,17 @@ class AdminController extends Controller
             'completed' => 'Completed',
             'failed' => 'Failed',
             'cancelled' => 'Cancelled'
+
         ];
 
-        return view('admin.memberships', compact('memberships', 'tiers', 'statuses'));
+        return response()->json(['message' => 'Status updated']);
+
+        // return view('admin.memberships', compact('memberships', 'tiers', 'statuses'));
     }
+
+
+
+
 
     /**
      * Update membership status.
@@ -242,6 +255,8 @@ class AdminController extends Controller
 
         return view('admin.referrals', compact('referrals', 'statuses', 'tiers'));
     }
+
+
 
     /**
      * Update referral status.
@@ -414,6 +429,8 @@ class AdminController extends Controller
         return view('admin.reports', compact('reports', 'dateRange'));
     }
 
+    
+
     /**
      * Export reports.
      */
@@ -435,7 +452,11 @@ class AdminController extends Controller
         ];
 
         return view('admin.settings', compact('settings'));
+
+
     }
+
+
 
     /**
      * Update settings.

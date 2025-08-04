@@ -26,6 +26,7 @@ class User extends Authenticatable
         'membership_type',
         'referral_code',
         'commission_rate',
+        'membership_valid_until',
         'membership_upgraded_at',
     ];
 
@@ -35,7 +36,6 @@ class User extends Authenticatable
     '/register',
     '/login',
 ];
-
 
 
     /**
@@ -101,6 +101,10 @@ class User extends Authenticatable
     {
         return $this->membership_type === 'admin';
     }
+
+
+
+    
 
     /**
      * Check if user can refer for diamond tier.

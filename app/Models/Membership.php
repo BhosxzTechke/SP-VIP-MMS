@@ -22,8 +22,12 @@ class Membership extends Model
         'transaction_id',
         'paymongo_payment_id',
         'payment_details',
+        'activated_at',
+        'expires_at',
         'paid_at',
     ];
+
+
 
     /**
      * The attributes that should be cast.

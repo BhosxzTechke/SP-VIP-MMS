@@ -182,8 +182,6 @@ public function createPaymentMethod(string $type, User $user): array
 }
 
 
-
-
     /**
      * Attach payment method to payment intent.
      */

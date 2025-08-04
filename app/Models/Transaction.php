@@ -23,9 +23,11 @@ class Transaction extends Model
         'external_payment_id',
         'payment_method',
         'payment_metadata',
-        'failure_reason',
         'processed_at',
     ];
+
+
+
 
     /**
      * The attributes that should be cast.
@@ -191,6 +193,8 @@ class Transaction extends Model
         ]);
     }
 
+
+    
     /**
      * Create commission payout transaction.
      */

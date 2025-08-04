@@ -11,16 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('password');
-            $table->enum('user_type', ['regular', 'vip', 'admin'])->default('regular');
-            $table->string('referral_code')->unique()->nullable();
-            $table->rememberToken();
-            $table->timestamps();
-        });
+    Schema::create('users', function (Blueprint $table) {
+        $table->id();
+        $table->string('name');
+        $table->string('email')->unique();
+        $table->timestamp('email_verified_at')->nullable();
+        $table->string('password');
+        $table->enum('user_type', ['regular', 'vip', 'admin'])->default('regular');
+
+        // Referrals
+        $table->string('referral_code')->unique()->nullable(); // for giving to others
+        $table->foreignId('referred_by')->nullable()->constrained('users')->nullOnDelete(); // who referred me
+
+        $table->string('phone')->nullable(); // optional but useful for contact/GCash payout
+        $table->rememberToken();
+        $table->timestamps();
+    });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();

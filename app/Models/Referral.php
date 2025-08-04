@@ -26,6 +26,8 @@ class Referral extends Model
         'notes',
     ];
 
+    
+
     /**
      * The attributes that should be cast.
      *

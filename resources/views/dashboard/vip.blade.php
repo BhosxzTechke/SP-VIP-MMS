@@ -24,6 +24,7 @@
                         <span>Upgraded {{ $user->membership_upgraded_at->format('M d, Y') }}</span>
                     </div>
                     @endif
+                    
                 </div>
             </div>
         </div>
@@ -170,6 +171,8 @@
             </div>
         </div>
 
+
+        
         <!-- Commission Rates -->
         <div class="mt-8">
             <div class="bg-white shadow rounded-lg">

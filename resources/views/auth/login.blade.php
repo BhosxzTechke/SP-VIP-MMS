@@ -15,7 +15,7 @@
             </h2>
             <p class="mt-2 text-center text-sm text-gray-600">
                 Or
-                <a href="{{ route('register.free') }}" class="font-medium text-primary-600 hover:text-primary-500">
+                <a href="{{ route('register') }}" class="font-medium text-primary-600 hover:text-primary-500">
                     create a new account
                 </a>
             </p>

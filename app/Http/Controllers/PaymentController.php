@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Http;
+
+
 
 class PaymentController extends Controller
 {
@@ -19,6 +22,9 @@ class PaymentController extends Controller
     {
         $this->paymentService = $paymentService;
     }
+
+
+
 
     /**
      * Show the upgrade page.
@@ -77,89 +83,125 @@ class PaymentController extends Controller
         return view('payment.upgrade', compact('user', 'membershipPricing'));
     }
 
+
     /**
      * Handle checkout process.
      */
-    public function checkout(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'tier' => 'required|in:gold,platinum,diamond',
-            'payment_method' => 'required|in:card,gcash,grab_pay,paymaya',
+public function checkout(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'tier' => 'required|in:gold,platinum,diamond',
+        'payment_method' => 'required|in:card,gcash,grab_pay,paymaya',
+    ]);
+
+    if ($validator->fails()) {
+        return back()->withErrors($validator);
+    }
+
+    $user = Auth::user();
+
+    if ($user->isVip()) {
+        return redirect()->route('dashboard')->with('error', 'You are already a VIP member.');
+    }
+
+    try {
+        // Create PaymentIntent
+        $result = $this->paymentService->createPaymentIntent($user, $request->tier);
+        if (!$result['success']) {
+            return back()->with('error', 'Failed to create payment intent.');
+        }
+
+        // Create PaymentMethod
+        $paymentMethodResult = $this->paymentService->createPaymentMethod($request->payment_method, $user);
+        if (!$paymentMethodResult['success']) {
+            return back()->with('error', 'Failed to create payment method.');
+        }
+
+        // Attach
+        $attachResult = $this->paymentService->attachPaymentMethod(
+            $result['payment_intent']['id'],
+            $paymentMethodResult['payment_method']['id'],
+            $request->payment_method // <-- NEW: Pass type
+        );
+
+        if (!$attachResult['success']) {
+            return back()->with('error', 'Failed to attach payment method.');
+        }
+
+        $paymentIntent = $attachResult['payment_intent'];
+        $status = $paymentIntent['attributes']['status'];
+        $redirectUrl = $paymentIntent['attributes']['next_action']['redirect']['url'] ?? null;
+
+        if ($redirectUrl) {
+            return redirect($redirectUrl); // For gcash, grab_pay, etc.
+        }
+
+        // For card or non-redirect payments
+        if (in_array($status, ['succeeded', 'processing', 'awaiting_payment_method'])) {
+            return redirect()->route('payment.success')->with('status', "Payment {$status}.");
+        }
+
+        return back()->with('error', 'Unexpected payment status.');
+
+    } catch (\Exception $e) {
+        Log::error('Checkout error', [
+            'user_id' => $user->id,
+            'tier' => $request->tier,
+            'error' => $e->getMessage(),
         ]);
 
-        if ($validator->fails()) {
-            return back()->withErrors($validator);
-        }
+        return back()->with('error', 'An error occurred during checkout. Please try again.');
+    }
+}
 
-        $user = Auth::user();
 
-        if ($user->isVip()) {
-            return redirect()->route('dashboard')->with('error', 'You are already a VIP member.');
-        }
 
-        try {
-            $result = $this->paymentService->createPaymentIntent($user, $request->tier);
 
-            if (!$result['success']) {
-                return back()->with('error', 'Failed to create payment. Please try again.');
+                /**
+                 * Handle successful payment.
+                 */
+            public function paymentSuccess(Request $request)
+            {
+                $sourceId = $request->query('id'); // This should be like "src_ABC123"
+
+                if (!$sourceId) {
+                    return redirect()->route('dashboard')->with('error', 'Invalid payment confirmation.');
+                }
+
+                // Now fetch source status from PayMongo
+                $response = Http::withBasicAuth(config('paymongo.secret_key'), '')
+                    ->get("https://api.paymongo.com/v1/sources/{$sourceId}");
+
+                if ($response->failed()) {
+                    return redirect()->route('dashboard')->with('error', 'Unable to verify payment status.');
+                }
+
+                $source = $response->json()['data'];
+                $status = $source['attributes']['status'];
+
+                if ($status !== 'paid') {
+                    return redirect()->route('dashboard')->with('error', 'Payment not completed.');
+                }
+
+                // Optional: read membership tier from metadata
+                $metadata = $source['attributes']['metadata'] ?? [];
+                $tier = $metadata['membership_tier'] ?? null;
+
+                $user = Auth::user();
+                if ($tier) {
+                    $user->membership_type = $tier;
+                    $user->save();
+                }
+
+                session()->forget(['payment_intent_id', 'client_key', 'tier', 'payment_method', 'amount']);
+
+                return view('payment.success', compact('user', 'tier'));
+                
             }
 
-            // Store payment details in session for the checkout page
-            session([
-                'payment_intent_id' => $result['payment_intent']['id'],
-                'client_key' => $result['client_key'],
-                'tier' => $request->tier,
-                'payment_method' => $request->payment_method,
-                'amount' => config("paymongo.membership_prices.{$request->tier}") / 100,
-            ]);
 
-            return view('payment.checkout', [
-                'paymentIntent' => $result['payment_intent'],
-                'clientKey' => $result['client_key'],
-                'tier' => $request->tier,
-                'paymentMethod' => $request->payment_method,
-                'amount' => config("paymongo.membership_prices.{$request->tier}") / 100,
-                'formattedAmount' => '₱' . number_format(config("paymongo.membership_prices.{$request->tier}") / 100, 2),
-                'user' => $user,
-            ]);
 
-        } catch (\Exception $e) {
-            Log::error('Checkout error', [
-                'user_id' => $user->id,
-                'tier' => $request->tier,
-                'error' => $e->getMessage(),
-            ]);
 
-            return back()->with('error', 'An error occurred during checkout. Please try again.');
-        }
-    }
-
-    /**
-     * Handle successful payment.
-     */
-    public function paymentSuccess(Request $request)
-    {
-        $user = Auth::user();
-        $paymentIntentId = $request->get('payment_intent');
-
-        if (!$paymentIntentId) {
-            return redirect()->route('dashboard')->with('error', 'Invalid payment confirmation.');
-        }
-
-        // Find the membership by PayMongo payment ID
-        $membership = Membership::where('paymongo_payment_id', $paymentIntentId)
-                                ->where('user_id', $user->id)
-                                ->first();
-
-        if (!$membership) {
-            return redirect()->route('dashboard')->with('error', 'Payment record not found.');
-        }
-
-        // Clear payment session data
-        session()->forget(['payment_intent_id', 'client_key', 'tier', 'payment_method', 'amount']);
-
-        return view('payment.success', compact('user', 'membership'));
-    }
 
     /**
      * Handle cancelled payment.

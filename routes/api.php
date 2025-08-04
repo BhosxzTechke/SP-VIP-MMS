@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\WebhookController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -15,12 +17,19 @@ use App\Http\Controllers\PaymentController;
 |
 */
 
+// PayMongo Webhook Routes
+
+Route::post('/paymongo/webhook', [WebhookController::class, 'handle']);
+
+
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// PayMongo Webhook Routes
-Route::post('/webhook/paymongo', [PaymentController::class, 'webhook'])->name('webhook.paymongo');
+
+// // PayMongo Webhook Routes
+// Route::post('/webhook/paymongo', [PaymentController::class, 'webhook'])->name('webhook.paymongo');
 
 // Public API Routes for referral validation
 Route::get('/referral/validate/{code}', function ($code) {

@@ -46,6 +46,8 @@ class DashboardController extends Controller
             'pending_commission' => $user->pending_commission,
         ];
 
+        
+
         $recentReferrals = $user->referralsSent()
                                ->with('referred')
                                ->latest()
@@ -112,14 +114,20 @@ class DashboardController extends Controller
         return view('dashboard.vip', compact('user', 'stats', 'recentReferrals', 'monthlyCommissions'));
     }
 
+
+
+    
     /**
      * Display user profile.
      */
-    public function profile()
-    {
-        $user = Auth::user();
-        return view('dashboard.profile', compact('user'));
-    }
+            public function profile()
+            {
+                $user = Auth::user();
+                return view('dashboard.profile', compact('user'));
+
+            }
+
+
 
     /**
      * Update user profile.
@@ -135,6 +143,8 @@ class DashboardController extends Controller
             'current_password' => 'nullable|required_with:password',
             'password' => 'nullable|confirmed|min:8',
         ]);
+
+
 
         if ($validator->fails()) {
             return back()->withErrors($validator);
@@ -158,9 +168,10 @@ class DashboardController extends Controller
         }
 
         $user->update($updateData);
-
+        @dd($user);
         return back()->with('success', 'Profile updated successfully.');
     }
+
 
     /**
      * Display referrals page.
@@ -183,6 +194,9 @@ class DashboardController extends Controller
 
         return view('dashboard.referrals', compact('user', 'referrals', 'stats'));
     }
+
+
+
 
     /**
      * Display referral history.

@@ -4,42 +4,29 @@
 <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8">
         <div>
+                    <div class="mx-auto h-12 w-12 flex items-center justify-center">
+                        <img src="icon/shopilipinas-logo.png" class="w-12 h-12 " alt="Shopilipinas Icon" />
+                    </div>
 
-
-
-            <div class="mx-auto h-12 w-12 flex items-center justify-center">
-                <img src="icon/shopilipinas-logo.png" class="w-12 h-12 " alt="Shopilipinas Icon" />
-            </div>
 
             <h2 class="mt-6 text-center text-3xl font-bold text-gray-900">
-               Create your account
+                Create your account
             </h2>
-
+            <p class="mt-2 text-center text-sm text-gray-600">
+               Or
+             <a href="{{ route('register') }}" class="font-medium text-primary-600 hover:text-primary-500">
+                Sign up as a VIP here.              
+            
+            </a>
+            </p>
         </div>
 
-        @if($referrer)
-            <div class="bg-green-50 border border-green-200 rounded-md p-4">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                        </svg>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm text-green-800">
-                            You've been referred by <strong>{{ $referrer->name }}</strong> ({{ $referrer->membership_display }})
-                        </p>
-                    </div>
-                </div>
-            </div>
-        @endif
 
-        <form class="mt-8 space-y-6" method="POST" action="{{ route('register') }}">
+
+        <form class="mt-8 space-y-6" method="POST" action="">
             @csrf
             
-            @if($referralCode)
-                <input type="hidden" name="referral_code" value="{{ $referralCode }}">
-            @endif
+
 
             <div class="space-y-4">
                 <div>
@@ -92,22 +79,6 @@
                            placeholder="Confirm your password">
                 </div>
 
-                @if(!$referralCode)
-                    <div>
-                        <label for="referral_code" class="block text-sm font-medium text-gray-700">Referral Code (Optional)</label>
-                        <input id="referral_code" name="referral_code" type="text" 
-                               value="{{ old('referral_code') }}"
-                               class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm @error('referral_code') border-red-300 @enderror"
-                               placeholder="Enter referral code if you have one">
-                        @error('referral_code')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                @endif
-            </div>
-
-
-
 
 
             <div class="flex items-center">
@@ -120,13 +91,12 @@
                     <a href="#" class="text-primary-600 hover:text-primary-500">Privacy Policy</a>
                 </label>
             </div>
-
-
-
             @error('terms')
                 <p class="text-sm text-red-600">{{ $message }}</p>
             @enderror
 
+
+            
             <div>
                 <button type="submit" 
                         class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
@@ -138,7 +108,7 @@
                 <p class="text-sm text-gray-600">
                     Already have an account?
                     <a href="{{ route('login') }}" class="font-medium text-primary-600 hover:text-primary-500">
-                     sign in to your existing account
+                        Sign in here
                     </a>
                 </p>
             </div>

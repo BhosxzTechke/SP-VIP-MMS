@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            // $table->string('vip_tier')->nullable()->after('user_type');
+        Schema::table('referrals', function (Blueprint $table) {
+          $table->string('status')->default('pending');
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            // $table->dropColumn('vip_tier');
+        Schema::table('referrals', function (Blueprint $table) {
+            //
         });
     }
 };
