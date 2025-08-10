@@ -11,6 +11,13 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
 
+
+    
+    <!-- Styles icon frontend -->
+    <link rel="stylesheet" href="{{ asset('frontend/assets/css/style.css')}}">
+
+
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -46,6 +53,9 @@
     </script>
 </head>
 <body class="font-sans antialiased bg-gray-50">
+
+
+
     <div class="min-h-screen">
         <!-- Navigation -->
         @if(auth()->check())

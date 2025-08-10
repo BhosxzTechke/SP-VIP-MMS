@@ -2,26 +2,66 @@
 
 @section('content')
 <div class="bg-white">
-    <!-- Hero Section -->
-    <div class="relative overflow-hidden">
+
+
+
+@vite('resources/css/app.css')
+
+        {{-- <!-- Floating Icon -->
+    <div class="absolute top-10 left-10">
+        <img src="{{ asset('icon/shopilipinas-logo.png') }}" alt="Figma" class="w-16 h-16 blur-sm opacity-90 animate-bounce">
+    </div> --}}
+
+    
+
+    {{-- <!-- More icons as needed -->
+    <div class="absolute top-20 right-10">
+        <img src="{{ asset('images/xd.png') }}" alt="XD" class="w-14 h-14 blur-md opacity-70 animate-pulse">
+    </div> --}}
+
+        <!-- 🌟 Floating Background Icons -->
+    <div class="breadcrumb__wrap__icon">
+        <ul>
+            <li><img src="{{ asset('frontend/img/icons/media.png') }}" alt=""></li>
+            <li><img src="{{ asset('frontend/img/icons/cart.png') }}" alt=""></li>
+            <li><img src="{{ asset('frontend/img/icons/card1.png') }}" alt=""></li>
+            <li><img src="{{ asset('frontend/img/icons/3dicon.png') }}" alt=""></li>
+            <li><img src="{{ asset('frontend/img/icons/card1.png') }}" alt=""></li>
+            <li><img src="{{ asset('frontend/img/icons/member.png') }}" alt=""></li>
+        </ul>
+    </div>
+    
+
+
+
+<!-- Hero Section -->
+<div class="relative overflow-hidden">
+
+
+
+    <!-- 🌟 Hero Content -->
+    <div class="flex items-center justify-center min-h-screen">
         <div class="max-w-7xl mx-auto">
             <div class="relative z-10 pb-8 bg-white sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">
                 <main class="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
-                    <div class="sm:text-center lg:text-left">
+                    <div class="sm:text-center lg:text-center">
                         <h1 class="text-4xl tracking-tight font-bold text-gray-900 sm:text-5xl md:text-6xl">
                             <span class="block xl:inline">Welcome to</span>
-                            <span class="block text-primary-600 xl:inline">ShoPilipinas VIP</span>
+                    <span class="block text-primary-600 xl:inline">ShoPilipinas VIP</span>
                         </h1>
+
                         <p class="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
                             Join our exclusive VIP portal and unlock higher referral commissions. Start as a free member or upgrade to VIP for premium benefits and unlimited earning potential.
                         </p>
-                        <div class="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
+
+
+                        <div class="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-center">
                             <div class="rounded-md shadow">
                                 <a href="{{ route('register') }}" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 md:py-4 md:text-lg md:px-10">
                                     Get Started Free
                                 </a>
-                                
                             </div>
+                            
                             <div class="mt-3 sm:mt-0 sm:ml-3">
                                 <a href="{{ route('login') }}" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-primary-700 bg-primary-100 hover:bg-primary-200 md:py-4 md:text-lg md:px-10">
                                     Sign In
@@ -32,6 +72,11 @@
                 </main>
             </div>
         </div>
+    </div>
+</div>
+
+
+
         <div class="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2">
             <div class="h-56 w-full bg-gradient-to-br from-primary-400 to-primary-600 sm:h-72 md:h-96 lg:w-full lg:h-full flex items-center justify-center">
                 <div class="text-white text-center">
@@ -43,7 +88,7 @@
     </div>
 
     <!-- Features Section -->
-    <div class="py-12 bg-gray-50">
+    <div class="py-12 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="lg:text-center">
                 <h2 class="text-base text-primary-600 font-semibold tracking-wide uppercase">Membership Benefits</h2>
@@ -210,7 +255,7 @@
                 <span class="block">Ready to start earning?</span>
                 <span class="block">Join ShoPilipinas VIP today.</span>
             </h2>
-            <p class="mt-4 text-lg leading-6 text-primary-200">
+            <p class="mt-4 text-lg leading-6 text-white">
                 Start with a free account and begin referring friends immediately. Upgrade anytime to unlock higher commissions.
             </p>
             <a href="{{ route('register') }}" class="mt-8 w-full inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-primary-600 bg-white hover:bg-primary-50 sm:w-auto">

@@ -1,0 +1,124 @@
+
+/*=============================
+Breadcrumb
+=============================*/
+.breadcrumb__wrap {
+  background: #ffffff;
+  padding: 275px 0 155px;
+  position: relative;
+  /* overflow: hidden; */
+  z-index: 0; }
+  @media (max-width: 1500px) {
+    .breadcrumb__wrap {
+      padding: 185px 0 115px; } }
+  .breadcrumb__wrap__content {
+    text-align: center; }
+    .breadcrumb__wrap__content .title {
+      font-size: 65px;
+      letter-spacing: -0.01em;
+      text-transform: capitalize;
+      line-height: 1.1;
+      margin-bottom: 15px; }
+      @media (max-width: 767.98px) {
+        .breadcrumb__wrap__content .title {
+          font-size: 46px; } }
+  .breadcrumb__wrap .breadcrumb {
+    margin-bottom: 0;
+    justify-content: center; }
+    .breadcrumb__wrap .breadcrumb li {
+      text-transform: uppercase;
+      font-size: 14px;
+      font-weight: 700;
+      color: #FCAF17; }
+      .breadcrumb__wrap .breadcrumb li a {
+        color: #68666C; }
+  .breadcrumb__wrap__icon {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 52px;
+    max-width: 1560px;
+    min-height: 610px;
+    margin: 0 auto;
+    z-index: 0; }
+    @media (max-width: 1500px) {
+      .breadcrumb__wrap__icon {
+        bottom: 30px;
+        min-height: 235px; } }
+    @media (max-width: 1199.98px) {
+      .breadcrumb__wrap__icon {
+        max-width: 960px; } }
+    @media (max-width: 991.98px) {
+      .breadcrumb__wrap__icon {
+        display: none; } }
+    .breadcrumb__wrap__icon ul li {
+      position: absolute; }
+      .breadcrumb__wrap__icon ul li img {
+        -webkit-border-radius: 50%;
+        -moz-border-radius: 50%;
+        border-radius: 50%; }
+
+        /* 3D USER */
+        /* FIRST ICON IN THE LEFT UPPER */ 
+      .breadcrumb__wrap__icon ul li:nth-child(1) {
+        left: 9%;
+        top: 0; }
+        .breadcrumb__wrap__icon ul li:nth-child(1) img {
+          max-width: 118px;
+          filter: blur(1px); /*  Add this line to blur */}
+
+
+
+          /* CART */
+        /* SECOND ICON IN THE RIGHT UPPER  */
+      .breadcrumb__wrap__icon ul li:nth-child(2) {
+        left: 1%;
+        bottom: 21%; }
+        .breadcrumb__wrap__icon ul li:nth-child(2) img {
+          max-width: 131px;
+          filter: blur(2px); }
+
+
+          /* 3D CARD */
+        /* THIRD ICON   */
+      .breadcrumb__wrap__icon ul li:nth-child(3) {
+        left: 15%;
+        bottom: 0; }
+        .breadcrumb__wrap__icon ul li:nth-child(3) img {
+          max-width: 42px;
+          filter: blur(1px);
+        }
+
+        /* 3D BLUE CARD */
+        /* FOURTH ICON  */
+      .breadcrumb__wrap__icon ul li:nth-child(4) {
+        right: 14%;
+        top: 0; }
+        .breadcrumb__wrap__icon ul li:nth-child(4) img {
+          max-width: 150px;
+          filter: blur(2px); /*  Add this line to blur */
+
+ }
+
+ 
+        /* MEMBER ICON */
+        /* FIFTH ICON */
+        .breadcrumb__wrap__icon ul li:nth-child(5) {
+          right: 1%;
+          top: 29%;
+        }
+
+        .breadcrumb__wrap__icon ul li:nth-child(5) img {
+          max-width: 48px;
+          filter: blur(0.8px);
+        }
+
+        /* CARD SMALL */
+        /* SIXTH ICON   */
+      .breadcrumb__wrap__icon ul li:nth-child(6) {
+        right: 5.5%;
+        bottom: 0; }
+        .breadcrumb__wrap__icon ul li:nth-child(6) img {
+          max-width: 68px;
+          filter: blur(2px); /*  Add this line to blur */}
+
