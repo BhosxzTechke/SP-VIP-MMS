@@ -25,95 +25,102 @@ class PaymentService
         $this->webhookSecret = config('paymongo.webhook_secret');
     }
 
+
     /**
      * Create a payment intent for membership upgrade.
      */
-    public function createPaymentIntent(User $user, string $tier): array
-    {
-        try {
-            $amount = config("paymongo.membership_prices.{$tier}");
-            
-            if (!$amount) {
-                throw new Exception("Invalid membership tier: {$tier}");
-            }
 
-            // Create transaction record
-            $transaction = Transaction::createMembershipUpgrade($user, $tier, $amount / 100);
+public function createPaymentIntent(User $user, string $tier): array
+{
+    try {
+        $amount = config("paymongo.membership_prices.{$tier}");
+        
+        if (!$amount) {
+            throw new Exception("Invalid membership tier: {$tier}");
+        }
 
+        // Create transaction record
+        $transaction = Transaction::createMembershipUpgrade($user, $tier, $amount / 100);
 
-            // Create membership record
-            $membership = Membership::create([
-                'user_id' => $user->id,
-                'tier' => $tier,
-                'amount' => $amount / 100,
-                'transaction_id' => $transaction->id,
-                'payment_status' => 'pending',
-            ]);
+        // Create membership record
+        $membership = Membership::create([
+            'user_id' => $user->id,
+            'tier' => $tier,
+            'amount' => $amount / 100,
+            'transaction_id' => $transaction->id,
+            'payment_status' => 'pending',
+        ]);
 
-            $response = Http::withBasicAuth($this->secretKey, '')
-                ->post("{$this->baseUrl}/payment_intents", [
-                    'data' => [
-                        'attributes' => [
-                            'amount' => $amount,
-                            'currency' => 'PHP',
-                            'description' => "ShoPilipinas {$tier} VIP Membership - {$user->name}",
-                            'statement_descriptor' => 'ShoPilipinas VIP',
-                            'payment_method_allowed' => ['card', 'gcash', 'grab_pay', 'paymaya'],
-                            'metadata' => [
-                                'user_id' => (string) $user->id,
-                                'membership_tier' => (string) $tier,
-                                'transaction_id' => (string) $transaction->id,
-                                'membership_id' => (string) $membership->id,
-                            ],
+        // Create payment intent via PayMongo API
+        $response = Http::withBasicAuth($this->secretKey, '')
+            ->post("{$this->baseUrl}/payment_intents", [
+                'data' => [
+                    'attributes' => [
+                        'amount' => $amount,
+                        'currency' => 'PHP',
+                        'description' => "ShoPilipinas {$tier} VIP Membership - {$user->name}",
+                        'statement_descriptor' => 'ShoPilipinas VIP',
+                        'payment_method_allowed' => ['card', 'gcash', 'grab_pay', 'paymaya'],
+                        'payment_method_options' => [
+                            'card' => [
+                                'request_three_d_secure' => 'any' // Force 3DS for card UI
+                            ]
+                        ],
+                        'metadata' => [
+                            'user_id' => (string) $user->id,
+                            'membership_tier' => (string) $tier,
+                            'transaction_id' => (string) $transaction->id,
+                            'membership_id' => (string) $membership->id,
                         ],
                     ],
-                ]);
-
-
-            if ($response->failed()) {
-                Log::error('PayMongo payment intent creation failed', [
-                    'response' => $response->json(),
-                    'user_id' => $user->id,
-                    'tier' => $tier,
-                ]);
-                throw new Exception('Failed to create payment intent');
-            }
-
-            $paymentIntent = $response->json()['data'];
-            
-            // Update transaction with PayMongo payment ID
-            $transaction->update([
-                'external_payment_id' => $paymentIntent['id'],
-                'payment_metadata' => $paymentIntent,
+                ],
             ]);
 
-            // Update membership with PayMongo payment ID
-            $membership->update([
-                'paymongo_payment_id' => $paymentIntent['id'],
-                'payment_details' => $paymentIntent,
-            ]);
-
-            return [
-                'success' => true,
-                'payment_intent' => $paymentIntent,
-                'client_key' => $paymentIntent['attributes']['client_key'],
-                'transaction_id' => $transaction->id,
-                'membership_id' => $membership->id,
-            ];
-
-        } catch (Exception $e) {
-            Log::error('Payment intent creation error', [
-                'error' => $e->getMessage(),
+        if ($response->failed()) {
+            Log::error('PayMongo payment intent creation failed', [
+                'response' => $response->json(),
                 'user_id' => $user->id,
                 'tier' => $tier,
             ]);
-
-            return [
-                'success' => false,
-                'error' => $e->getMessage(),
-            ];
+            throw new Exception('Failed to create payment intent');
         }
+
+        $paymentIntent = $response->json()['data'];
+        
+        // Update transaction with PayMongo payment ID
+        $transaction->update([
+            'external_payment_id' => $paymentIntent['id'],
+            'payment_metadata' => $paymentIntent,
+        ]);
+
+        // Update membership with PayMongo payment ID
+        $membership->update([
+            'paymongo_payment_id' => $paymentIntent['id'],
+            'payment_details' => $paymentIntent,
+        ]);
+
+        return [
+            'success' => true,
+            'payment_intent' => $paymentIntent,
+            'client_key' => $paymentIntent['attributes']['client_key'],
+            'transaction_id' => $transaction->id,
+            'membership_id' => $membership->id,
+        ];
+
+    } catch (Exception $e) {
+        Log::error('Payment intent creation error', [
+            'error' => $e->getMessage(),
+            'user_id' => $user->id,
+            'tier' => $tier,
+        ]);
+
+        return [
+            'success' => false,
+            'error' => $e->getMessage(),
+        ];
     }
+}
+
 
 
 
@@ -123,36 +130,31 @@ class PaymentService
 public function createPaymentMethod(string $type, User $user): array
 {
     try {
-            if (in_array($type, ['gcash', 'grab_pay', 'paymaya'])) {
-                $details = [
-                    'return_url' => route('payment.success'),
-                ];
-            } elseif ($type === 'card') {
-                $details = [
-                    'card_number' => '4343434343434345', // Test card number
-                    'exp_month' => 12,
-                    'exp_year' => 2028,
-                    'cvc' => '123',
-                    'billing' => [
-                        'name' => $user->name,
-                        'email' => $user->email,
-                    ],
-                ];
-            } else {
-                throw new \Exception("Unsupported payment type: {$type}");
-            }
-        // Create payment method via PayMongo API
+        if (in_array($type, ['gcash', 'grab_pay', 'paymaya'])) {
+            // Wallet-based payments
+            $details = [
+                'return_url' => route('payment.success'),
+            ];
 
-        $response = Http::withBasicAuth($this->publicKey, '')
-            ->post("{$this->baseUrl}/payment_methods", [
-                'data' => [
-                    'attributes' => [
-                        'type' => $type,
-                        'details' => $details,
+            $response = Http::withBasicAuth($this->publicKey, '')
+                ->post("{$this->baseUrl}/payment_methods", [
+                    'data' => [
+                        'attributes' => [
+                            'type' => $type,
+                            'details' => $details,
+                        ],
                     ],
-                ],
-            ]);
+                ]);
 
+        } elseif ($type === 'card') {
+            // For cards, use Checkout Session instead of direct payment method creation
+            return $this->createCardCheckout($user);
+            
+        } else {
+            throw new \Exception("Unsupported payment type: {$type}");
+        }
+
+        // Common error handling for non-card payments
         if ($response->failed()) {
             Log::error('PayMongo payment method creation failed', [
                 'response' => $response->json(),
@@ -181,6 +183,49 @@ public function createPaymentMethod(string $type, User $user): array
     }
 }
 
+    /**
+     * Create a card checkout session.
+     */
+public function createCardCheckout(User $user): array
+{
+    try {
+        $response = Http::withBasicAuth($this->secretKey, '')
+            ->post("{$this->baseUrl}/checkout_sessions", [
+                'data' => [
+                    'attributes' => [
+                        'payment_method_types' => ['card'],
+                        'line_items' => [
+                            [
+                                'name' => 'Upgrade Subscription',
+                                'amount' => 10000, // in centavos (₱100.00)
+                                'currency' => 'PHP',
+                                'quantity' => 1,
+                            ],
+                        ],
+                        'success_url' => route('payment.success'),
+                        'cancel_url' => route('payment.cancel'),
+                        'customer_email' => $user->email,
+                    ],
+                ],
+            ]);
+
+        if ($response->failed()) {
+            throw new \Exception('Failed to create card checkout session');
+        }
+
+        return [
+            'success' => true,
+            'checkout_url' => $response->json()['data']['attributes']['checkout_url'],
+        ];
+    } catch (\Exception $e) {
+        return [
+            'success' => false,
+            'error' => $e->getMessage(),
+        ];
+    }
+}
+
+
 
     /**
      * Attach payment method to payment intent.
@@ -196,6 +241,7 @@ public function attachPaymentMethod(string $paymentIntentId, string $paymentMeth
                 if (in_array($type, ['gcash', 'grab_pay', 'paymaya'])) {
                     $attributes['return_url'] = route('payment.success');
                 }
+                
 
         $response = Http::withBasicAuth($this->secretKey, '')
             ->post("{$this->baseUrl}/payment_intents/{$paymentIntentId}/attach", [
@@ -247,6 +293,7 @@ public function attachPaymentMethod(string $paymentIntentId, string $paymentMeth
                 'event_id' => $event['id'],
             ]);
 
+
             switch ($eventType) {
                 case 'payment_intent.succeeded':
                     return $this->handlePaymentSuccess($event['attributes']['data']);
@@ -273,7 +320,7 @@ public function attachPaymentMethod(string $paymentIntentId, string $paymentMeth
      */
     private function handlePaymentSuccess(array $paymentData): bool
     {
-        try {
+        try {   
             $metadata = $paymentData['attributes']['metadata'] ?? [];
             $userId = $metadata['user_id'] ?? null;
             $membershipId = $metadata['membership_id'] ?? null;
@@ -283,6 +330,7 @@ public function attachPaymentMethod(string $paymentIntentId, string $paymentMeth
                 Log::error('Missing metadata in payment success webhook', $metadata);
                 return false;
             }
+            
 
             $user = User::find($userId);
             $membership = Membership::find($membershipId);
@@ -296,6 +344,7 @@ public function attachPaymentMethod(string $paymentIntentId, string $paymentMeth
                 ]);
                 return false;
             }
+
 
             // Mark membership as completed
             $membership->markAsCompleted();
@@ -363,17 +412,22 @@ public function attachPaymentMethod(string $paymentIntentId, string $paymentMeth
     /**
      * Process referral commissions.
      */
+
+
     private function processReferralCommissions(User $user, string $tier, float $amount): void
     {
         try {
             $referral = $user->referralsReceived()->first();
+
+            // titingnan nia if the user was received referred 
             
             if (!$referral) {
                 return; // User was not referred
             }
 
+
             $referrer = $referral->referrer;
-            
+
             // Check if referrer can refer this tier
             if ($tier === 'diamond' && !$referrer->canReferDiamond()) {
                 Log::warning('Free user attempted to refer Diamond tier', [

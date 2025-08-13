@@ -6,7 +6,7 @@
     <div class="max-w-3xl mx-auto">
         <h1 class="text-3xl font-bold mb-6">Choose Your VIP Membership</h1>
 
-        <form method="POST" action="{{ route('membership.subscribe') }}" class="space-y-8">
+        <form method="POST" action="{{ route('upgrade.checkout') }}" class="space-y-8">
             @csrf
 
             @foreach ($membershipPricing as $tier => $info)

@@ -63,8 +63,9 @@
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex justify-between h-16">
                         <div class="flex items-center">
-                            <a href="{{ route('dashboard') }}" class="text-xl font-bold text-gray-900">
-                                ShoPilipinas VIP
+                            <a href="{{ route('dashboard') }}" class="flex items-center space-x-2">
+                                <img src="{{ asset('icon/SP-DASHBOARD.png') }}" alt="ShoPilipinas VIP Logo" class="h-8 w-auto">
+                                {{-- <span class="text-xl font-bold text-gray-900">ShoPilipinas VIP</span> --}}
                             </a>
                         </div>
 

@@ -7,7 +7,7 @@
         <div>
 
         <div class="mx-auto h-20 w-14 flex items-center justify-center">
-            <a href="{{ route('landing') }}"><img src="icon/shopilipinas-logo.png" class="w-19 h-19 py-3" alt="Shopilipinas Icon"/></a>
+            <a href="{{ route('landing') }}"><img src="icon/SP-VIP.png" class="w-19 h-19 py-3" alt="Shopilipinas Icon"/></a>
         </div>
 
             <h2 class="mt-6 text-center text-3xl font-bold text-gray-900">
